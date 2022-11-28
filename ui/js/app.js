@@ -1729,7 +1729,8 @@ function setFiatCode(data) {
 function setFixedFee(_fee) {
   var fee = parseFloat(_fee);
   if (fee > 0) {
-    var fixedFee = translate("Transaction Fee: %s", [formatFiat(fee, 2)]);
+    // var fixedFee = translate("Transaction Fee: %s", [formatFiat(fee, 2)]);
+    var fixedFee = "Transaction Fee: " + formatFiat(fee, 2);
     $(".js-i18n-fixed-fee").html(fixedFee);
   } else {
     $(".js-i18n-fixed-fee").html("");
@@ -1748,7 +1749,8 @@ function setCredit(credit, lastBill) {
   var cryptoDisplayCode = coin.displayCode;
   updateCrypto(".total-crypto-rec", cryptoAmount, cryptoDisplayCode);
   $(".amount-deposited").html(
-    translate("You deposited %s", [fiat + " " + fiatCode])
+    // translate("You deposited %s", [fiat + " " + fiatCode])
+    "你購買了 " + fiat + " " + fiatCode
   );
   $(".fiat .js-amount").html(fiat);
 
