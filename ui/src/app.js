@@ -1673,7 +1673,7 @@ function setFixedFee(_fee) {
   const fee = parseFloat(_fee);
   if (fee > 0) {
     // const fixedFee = translate("Transaction Fee: %s", [formatFiat(fee, 2)]);
-    const fixedFee = "Transaction Fee: " + formatFiat(fee, 2);
+    const fixedFee = "手續費: " + formatFiat(fee, 2);
     $(".js-i18n-fixed-fee").html(fixedFee);
   } else {
     $(".js-i18n-fixed-fee").html("");
