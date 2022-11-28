@@ -1438,7 +1438,11 @@ function setTermsConditionsAcceptanceDelay(screen, data) {
 
   var seconds = data.delayTimer / 1000;
   acceptButton.prop("disabled", true);
-  acceptButton.html(data.accept + " (" + seconds + ")");
+  if (seconds) {
+    acceptButton.html(data.accept + " (" + seconds + ")");
+  } else {
+    acceptButton.html(data.accept + " (0)");
+  }
 
   var tmpbtn = acceptButton
     .clone()
