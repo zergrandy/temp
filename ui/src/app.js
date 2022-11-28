@@ -1,24 +1,13 @@
 /* globals $, URLSearchParams, WebSocket, locales, Keyboard, Keypad, Jed, BigNumber, HOST, PORT, Origami, kjua, TimelineMax, Two */
 "use strict";
 
-function _toConsumableArray(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-      arr2[i] = arr[i];
-    }
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-}
-
-var queryString = window.location.search;
-var params = new URLSearchParams(queryString.substring(1));
-var SCREEN = params.get("screen");
-var DEBUG_MODE = SCREEN ? "demo" : params.get("debug");
-var CASH_OUT_QR_COLOR = "#403c51";
-var CASH_IN_QR_COLOR = "#0e4160";
-var NUMBER_OF_BUTTONS = 3;
+const queryString = window.location.search;
+const params = new URLSearchParams(queryString.substring(1));
+const SCREEN = params.get("screen");
+const DEBUG_MODE = SCREEN ? "demo" : params.get("debug");
+const CASH_OUT_QR_COLOR = "#403c51";
+const CASH_IN_QR_COLOR = "#0e4160";
+const NUMBER_OF_BUTTONS = 3;
 
 var scrollSize = 0;
 var textHeightQuantity = 0;
@@ -56,12 +45,12 @@ var securityKeypad = null;
 var previousState = null;
 var buttonActive = true;
 var cassettes = null;
-var currentCryptoCode = null;
-var currentCoin = null;
-var currentCoins = [];
-var customRequirementNumericalKeypad = null;
-var customRequirementTextKeyboard = null;
-var customRequirementChoiceList = null;
+let currentCryptoCode = null;
+let currentCoin = null;
+let currentCoins = [];
+let customRequirementNumericalKeypad = null;
+let customRequirementTextKeyboard = null;
+let customRequirementChoiceList = null;
 
 var MUSEO = [
   "ca",
@@ -88,15 +77,13 @@ var MUSEO = [
 ];
 
 function connect() {
-  console.log("ws://" + HOST + ":" + PORT + "/");
-  websocket = new WebSocket("ws://" + HOST + ":" + PORT + "/");
+  console.log(`ws://${HOST}:${PORT}/`);
+  websocket = new WebSocket(`ws://${HOST}:${PORT}/`);
   websocket.onmessage = function (event) {
     var data = $.parseJSON(event.data);
     processData(data);
   };
-  websocket.onerror = function (err) {
-    return console.log(err);
-  };
+  websocket.onerror = (err) => console.log(err);
 }
 
 function verifyConnection() {
@@ -319,25 +306,15 @@ function translate(data, fetchArgs) {
   if (data === "") return data;
 
   try {
-    var _locale$translate;
-
     return fetchArgs
-      ? (_locale$translate = locale.translate(data)).fetch.apply(
-          _locale$translate,
-          _toConsumableArray(fetchArgs)
-        )
+      ? locale.translate(data).fetch(...fetchArgs)
       : locale.translate(data).fetch();
   } catch (error) {
     if (!defaultLocale) console.error("Error while translating: ", error);
     else {
       try {
-        var _defaultLocale$transl;
-
         return fetchArgs
-          ? (_defaultLocale$transl = defaultLocale.translate(data)).fetch.apply(
-              _defaultLocale$transl,
-              _toConsumableArray(fetchArgs)
-            )
+          ? defaultLocale.translate(data).fetch(...fetchArgs)
           : defaultLocale.translate(data).fetch();
       } catch (e) {
         console.error("Error while translating: ", e);
@@ -469,7 +446,7 @@ function chooseCoin(coins, twoWayMode) {
   setChooseCoinColors();
   // setupAnimation(twoWayMode, aspectRatio800)
 
-  var defaultCoin = coins[0];
+  const defaultCoin = coins[0];
 
   currentCryptoCode = defaultCoin.cryptoCode;
   currentCoin = defaultCoin;
@@ -511,12 +488,12 @@ function setupCoinsButtons() {
   $(".crypto-buttons").empty();
   closeCoinDropdown();
 
-  var coins = currentCoins.slice();
-  var dropdownCoins = [];
+  let coins = currentCoins.slice();
+  let dropdownCoins = [];
 
   if (coins.length === 1) return;
 
-  var showMoreButton = coins.length > 4;
+  const showMoreButton = coins.length > 4;
   if (showMoreButton) {
     $("crypto-dropdown-toggle").removeClass("hide");
     dropdownCoins = coins.slice(3);
@@ -526,41 +503,42 @@ function setupCoinsButtons() {
   }
 
   coins.forEach(function (coin) {
-    var activeClass =
+    const activeClass =
       coin.cryptoCode === currentCryptoCode ? "choose-coin-button-active" : "";
-    var el =
-      '<div class="choose-coin-button h4 coin-' +
-      coin.cryptoCode.toLowerCase() +
-      " " +
-      activeClass +
-      '" data-crypto-code="' +
-      coin.cryptoCode +
-      '">\n      ' +
-      coin.display +
-      '\n      <span class="choose-coin-svg-wrapper">\n        <svg xmlns="http://www.w3.org/2000/svg" width="52" height="8" viewBox="0 0 52 8">\n          <path fill="none" fill-rule="evenodd" stroke="#FFF" stroke-linecap="round" stroke-width="8" d="M4 4h44"/>\n        </svg>\n      </span>\n    </div>';
+    const el = `<div class="choose-coin-button h4 coin-${coin.cryptoCode.toLowerCase()} ${activeClass}" data-crypto-code="${
+      coin.cryptoCode
+    }">
+      ${coin.display}
+      <span class="choose-coin-svg-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="52" height="8" viewBox="0 0 52 8">
+          <path fill="none" fill-rule="evenodd" stroke="#FFF" stroke-linecap="round" stroke-width="8" d="M4 4h44"/>
+        </svg>
+      </span>
+    </div>`;
     $(".crypto-buttons").append(el);
   });
   if (showMoreButton) {
-    $(".crypto-buttons").append(
-      '\n      <div class="choose-coin-button h4" data-more="true">\n        <div id="crypto-dropdown-toggle" data-more="true">\n          <span class="js-i18n">' +
-        translate("More") +
-        '</span>\n          <span class="choose-coin-svg-wrapper">\n            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="8" viewBox="0 0 52 8">\n              <path fill="none" fill-rule="evenodd" stroke="#FFF" stroke-linecap="round" stroke-width="8" d="M4 4h44"/>\n            </svg>\n          </span>\n        </div>\n        <div id="cryptos" class="dropdown hide"></div>\n      </div>\n    '
-    );
-    dropdownCoins.forEach(function (coin) {
-      var el =
-        '<button class="h4 sapphire button small-action-button coin-' +
-        coin.cryptoCode.toLowerCase() +
-        '"\n        data-crypto-code="' +
-        coin.cryptoCode +
-        '">' +
-        coin.display +
-        "</button>";
+    $(".crypto-buttons").append(`
+      <div class="choose-coin-button h4" data-more="true">
+        <div id="crypto-dropdown-toggle" data-more="true">
+          <span class="js-i18n">${translate("More")}</span>
+          <span class="choose-coin-svg-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="8" viewBox="0 0 52 8">
+              <path fill="none" fill-rule="evenodd" stroke="#FFF" stroke-linecap="round" stroke-width="8" d="M4 4h44"/>
+            </svg>
+          </span>
+        </div>
+        <div id="cryptos" class="dropdown hide"></div>
+      </div>
+    `);
+    dropdownCoins.forEach((coin) => {
+      const el = `<button class="h4 sapphire button small-action-button coin-${coin.cryptoCode.toLowerCase()}"
+        data-crypto-code="${coin.cryptoCode}">${coin.display}</button>`;
       $("#cryptos").append(el);
     });
-    var el =
-      '<button class="h4 sapphire button small-action-button js-i18n" data-less="true">' +
-      translate("Less") +
-      "</button>";
+    const el = `<button class="h4 sapphire button small-action-button js-i18n" data-less="true">${translate(
+      "Less"
+    )}</button>`;
     $("#cryptos").append(el);
     // As we add buttons 'more' and 'less' after initTranslate
     // they don't have baseTranslation translation data attached to them.
@@ -572,17 +550,17 @@ function setupCoinsButtons() {
 }
 
 function setCryptoBuy(coin) {
-  var cashIn = $(".cash-in");
-  var translatedCoin = translate(coin.display);
-  var buyStr = translate("Buy<br/>%s", [translatedCoin]);
+  const cashIn = $(".cash-in");
+  const translatedCoin = translate(coin.display);
+  const buyStr = translate("Buy<br/>%s", [translatedCoin]);
 
   cashIn.html(buyStr);
 }
 
 function setCryptoSell(coin) {
-  var cashOut = $(".cash-out");
-  var translatedCoin = translate(coin.display);
-  var sellStr = translate("Sell<br/>%s", [translatedCoin]);
+  const cashOut = $(".cash-out");
+  const translatedCoin = translate(coin.display);
+  const sellStr = translate("Sell<br/>%s", [translatedCoin]);
 
   cashOut.html(sellStr);
 }
@@ -592,49 +570,37 @@ function setCoins(supportedCoins) {
 }
 
 function getCryptoCurrency(cryptoCode) {
-  var cryptoCurrency = coins.find(function (c) {
-    return c.cryptoCode === cryptoCode;
-  });
-  if (!cryptoCurrency) throw new Error("Unsupported crypto: " + cryptoCode);
+  const cryptoCurrency = coins.find((c) => c.cryptoCode === cryptoCode);
+  if (!cryptoCurrency) throw new Error(`Unsupported crypto: ${cryptoCode}`);
   return cryptoCurrency;
 }
 
 function switchCoin(coin) {
-  var cashIn = $(".cash-in");
-  var cashOut = $(".cash-out");
-  var cryptoCode = coin.cryptoCode;
+  const cashIn = $(".cash-in");
+  const cashOut = $(".cash-out");
+  const cryptoCode = coin.cryptoCode;
 
   if (currentCryptoCode === cryptoCode) return;
 
-  $(".coin-" + currentCryptoCode.toLowerCase()).removeClass(
+  $(`.coin-${currentCryptoCode.toLowerCase()}`).removeClass(
     "choose-coin-button-active"
   );
-  $(".coin-" + cryptoCode.toLowerCase()).addClass("choose-coin-button-active");
+  $(`.coin-${cryptoCode.toLowerCase()}`).addClass("choose-coin-button-active");
   currentCryptoCode = cryptoCode;
   currentCoin = coin;
 
   cashIn.addClass("crypto-switch");
-  setTimeout(function () {
-    return setCryptoBuy(coin);
-  }, 100);
-  setTimeout(function () {
-    return cashIn.removeClass("crypto-switch");
-  }, 1000);
+  setTimeout(() => setCryptoBuy(coin), 100);
+  setTimeout(() => cashIn.removeClass("crypto-switch"), 1000);
 
-  setTimeout(function () {
+  setTimeout(() => {
     cashOut.addClass("crypto-switch");
-    setTimeout(function () {
-      return setCryptoSell(coin);
-    }, 100);
-    setTimeout(function () {
-      return cashOut.removeClass("crypto-switch");
-    }, 1000);
+    setTimeout(() => setCryptoSell(coin), 100);
+    setTimeout(() => cashOut.removeClass("crypto-switch"), 1000);
   }, 80);
 
-  var selectedIndex = currentCoins.indexOf(
-    currentCoins.find(function (it) {
-      return it.cryptoCode === cryptoCode;
-    })
+  const selectedIndex = currentCoins.indexOf(
+    currentCoins.find((it) => it.cryptoCode === cryptoCode)
   );
   if (currentCoins.length > 4 && selectedIndex > 2) {
     currentCoins.splice(2, 0, currentCoins.splice(selectedIndex, 1)[0]);
@@ -644,10 +610,10 @@ function switchCoin(coin) {
 }
 
 $(document).ready(function () {
-  var attachFastClick = Origami.fastclick;
+  const attachFastClick = Origami.fastclick;
   attachFastClick(document.body);
 
-  window.addEventListener("resize", function () {
+  window.addEventListener("resize", () => {
     calculateAspectRatio();
     setChooseCoinColors();
   });
@@ -787,7 +753,7 @@ $(document).ready(function () {
     buttonPressed("sendCoins");
   });
 
-  var blockedCustomerOk = document.getElementById("blocked-customer-ok");
+  const blockedCustomerOk = document.getElementById("blocked-customer-ok");
   touchEvent(blockedCustomerOk, function () {
     buttonPressed("blockedCustomerOk");
   });
@@ -829,23 +795,22 @@ $(document).ready(function () {
     buttonPressed("submitPromoCode", { input: code });
   });
 
-  var submitTextRequirementButton = document.getElementById(
+  const submitTextRequirementButton = document.getElementById(
     "submit-text-requirement"
   );
-  var nextFieldTextRequirementButton = document.getElementById(
+  const nextFieldTextRequirementButton = document.getElementById(
     "next-text-requirement"
   );
-  var previousFieldTextRequirementButton = document.getElementById(
+  const previousFieldTextRequirementButton = document.getElementById(
     "previous-text-requirement"
   );
   touchEvent(submitTextRequirementButton, function () {
     customRequirementTextKeyboard.deactivate.bind(
       customRequirementTextKeyboard
     );
-    var text =
-      $(".text-input-field-1").data("content") +
-      " " +
-      ($(".text-input-field-2").data("content") || "");
+    var text = `${$(".text-input-field-1").data("content")} ${
+      $(".text-input-field-2").data("content") || ""
+    }`;
     buttonPressed("customInfoRequestSubmit", text);
     $(".text-input-field-1").removeClass("faded").data("content", "").val("");
     $(".text-input-field-2").addClass("faded").data("content", "").val("");
@@ -952,9 +917,9 @@ $(document).ready(function () {
 
   calculateAspectRatio();
 
-  var cryptoButtons = document.getElementById("crypto-buttons");
-  touchEvent(cryptoButtons, function (event) {
-    var el = $(event.target);
+  const cryptoButtons = document.getElementById("crypto-buttons");
+  touchEvent(cryptoButtons, (event) => {
+    let el = $(event.target);
     if (el.is("path") || el.is("svg") || el.is("span")) {
       el = el.closest("div");
     }
@@ -969,34 +934,32 @@ $(document).ready(function () {
       return;
     }
 
-    var cryptoCode = el.data("cryptoCode");
+    const cryptoCode = el.data("cryptoCode");
     if (!cryptoCode) return;
 
-    var wantedCoin = currentCoins.find(function (it) {
-      return it.cryptoCode === cryptoCode;
-    });
+    const wantedCoin = currentCoins.find((it) => it.cryptoCode === cryptoCode);
     if (!wantedCoin) return;
 
-    var coin = { cryptoCode: cryptoCode, display: wantedCoin.display };
+    const coin = { cryptoCode, display: wantedCoin.display };
     switchCoin(coin);
   });
 
   var areYouSureCancel = document.getElementById(
     "are-you-sure-cancel-transaction"
   );
-  touchEvent(areYouSureCancel, function () {
-    return buttonPressed("cancelTransaction", previousState);
-  });
+  touchEvent(areYouSureCancel, () =>
+    buttonPressed("cancelTransaction", previousState)
+  );
 
   var areYouSureContinue = document.getElementById(
     "are-you-sure-continue-transaction"
   );
-  touchEvent(areYouSureContinue, function () {
-    return buttonPressed("continueTransaction", previousState);
-  });
+  touchEvent(areYouSureContinue, () =>
+    buttonPressed("continueTransaction", previousState)
+  );
 
   var coinRedeem = document.getElementById("coin-redeem-button");
-  touchEvent(coinRedeem, function () {
+  touchEvent(coinRedeem, () => {
     setDirection("cashOut");
     buttonPressed("redeem");
   });
@@ -1025,7 +988,7 @@ $(document).ready(function () {
   setupImmediateButton(
     "custom-permission-cancel-numerical",
     "cancelCustomInfoRequest",
-    function () {
+    () => {
       customRequirementNumericalKeypad.deactivate.bind(
         customRequirementNumericalKeypad
       );
@@ -1034,7 +997,7 @@ $(document).ready(function () {
   setupImmediateButton(
     "custom-permission-cancel-text",
     "cancelCustomInfoRequest",
-    function () {
+    () => {
       customRequirementTextKeyboard.deactivate.bind(
         customRequirementTextKeyboard
       );
@@ -1046,7 +1009,7 @@ $(document).ready(function () {
   setupImmediateButton(
     "custom-permission-cancel-choiceList",
     "cancelCustomInfoRequest",
-    function () {}
+    () => {}
   );
 
   setupButton("custom-permission-yes", "permissionCustomInfoRequest");
@@ -1054,7 +1017,7 @@ $(document).ready(function () {
   setupImmediateButton(
     "custom-permission-cancel-numerical",
     "cancelCustomInfoRequest",
-    function () {
+    () => {
       customRequirementNumericalKeypad.deactivate.bind(
         customRequirementNumericalKeypad
       );
@@ -1063,7 +1026,7 @@ $(document).ready(function () {
   setupImmediateButton(
     "custom-permission-cancel-text",
     "cancelCustomInfoRequest",
-    function () {
+    () => {
       customRequirementTextKeyboard.deactivate.bind(
         customRequirementTextKeyboard
       );
@@ -1073,7 +1036,7 @@ $(document).ready(function () {
     }
   );
 
-  touchEvent(document.getElementById("change-language-section"), function () {
+  touchEvent(document.getElementById("change-language-section"), () => {
     if (_primaryLocales.length === 2) {
       setLocale(otherLocale());
       setCryptoBuy(currentCoin);
@@ -1083,16 +1046,16 @@ $(document).ready(function () {
     openLanguageDropdown();
   });
 
-  var cashInBox = document.getElementById("cash-in-box");
-  touchEvent(cashInBox, function () {
+  const cashInBox = document.getElementById("cash-in-box");
+  touchEvent(cashInBox, () => {
     buttonPressed("start", {
       cryptoCode: currentCryptoCode,
       direction: "cashIn",
     });
   });
 
-  var cashOutBox = document.getElementById("cash-out-box");
-  touchEvent(cashOutBox, function () {
+  const cashOutBox = document.getElementById("cash-out-box");
+  touchEvent(cashOutBox, () => {
     buttonPressed("start", {
       cryptoCode: currentCryptoCode,
       direction: "cashOut",
@@ -1315,7 +1278,7 @@ function setOperatorInfo(operator) {
 }
 
 function setHardLimit(limits) {
-  var component = $("#hard-limit-hours");
+  const component = $("#hard-limit-hours");
   if (limits.hardLimitWeeks >= 1) {
     return component.text(
       translate("Please come back in %s weeks", [limits.hardLimitWeeks])
@@ -1338,17 +1301,15 @@ function setHardLimit(limits) {
 
 function setCryptomatModel(model) {
   cryptomatModel = model;
-  var versions = ["sintra", "douro", "gaia", "tejo"];
-  var body = $("body");
+  const versions = ["sintra", "douro", "gaia", "tejo"];
+  const body = $("body");
 
-  versions.forEach(function (it) {
-    return body.removeClass(it);
-  });
+  versions.forEach((it) => body.removeClass(it));
   $("body").addClass(model.startsWith("douro") ? "douro" : model);
 }
 
 function setDirection(direction) {
-  var states = [
+  let states = [
     $(".scan_id_photo_state"),
     $(".scan_manual_id_photo_state"),
     $(".scan_id_data_state"),
@@ -1388,7 +1349,7 @@ function setDirection(direction) {
     $(".custom_permission_screen2_text_state"),
     $(".custom_permission_screen2_choiceList_state"),
   ];
-  states.forEach(function (it) {
+  states.forEach((it) => {
     setUpDirectionElement(it, direction);
   });
 }
@@ -1403,7 +1364,7 @@ function setDirection(direction) {
  * @param {String} data.cancel
  */
 function setTermsScreen(data) {
-  var $screen = $(".terms_screen_state");
+  const $screen = $(".terms_screen_state");
   $screen.find(".js-terms-title").html(data.title);
   startPage(data.text);
   $screen.find(".js-terms-cancel-button").html(data.cancel);
@@ -1431,18 +1392,14 @@ function setTermsConditionsTimeout() {
 }
 
 function setTermsConditionsAcceptanceDelay(screen, data) {
-  var acceptButton = screen.find(".js-terms-accept-button");
+  let acceptButton = screen.find(".js-terms-accept-button");
   acceptButton.css({ "min-width": 0 });
 
   if (!data.delay) return;
 
-  var seconds = data.delayTimer / 1000;
+  let seconds = data.delayTimer / 1000;
   acceptButton.prop("disabled", true);
-  if (seconds) {
-    acceptButton.html(data.accept + " (" + seconds + ")");
-  } else {
-    acceptButton.html(data.accept + " (0)");
-  }
+  acceptButton.html(`${data.accept} (${seconds})`);
 
   var tmpbtn = acceptButton
     .clone()
@@ -1450,19 +1407,15 @@ function setTermsConditionsAcceptanceDelay(screen, data) {
     .css({ display: "block", visibility: "hidden" });
   var width = tmpbtn.outerWidth();
   tmpbtn.remove();
-  acceptButton.css({ "min-width": width + "px" });
+  acceptButton.css({ "min-width": `${width}px` });
   termsConditionsAcceptanceInterval = setInterval(function () {
     seconds--;
     if (currentState === "terms_screen" && seconds > 0) {
-      if (seconds) {
-        acceptButton.html(data.accept + " (" + seconds + ")");
-      } else {
-        acceptButton.html(data.accept + " (0)");
-      }
+      acceptButton.html(`${data.accept} (${seconds})`);
     }
     if (currentState === "terms_screen" && seconds <= 0) {
       acceptButton.prop("disabled", false);
-      acceptButton.html("" + data.accept);
+      acceptButton.html(`${data.accept}`);
     }
     if (seconds <= 0) {
       clearInterval(termsConditionsAcceptanceInterval);
@@ -1483,7 +1436,7 @@ function resetTermsConditionsTimeout() {
 // click page up button
 function scrollUp() {
   resetTermsConditionsTimeout();
-  var div = document.getElementById("js-terms-text-div");
+  const div = document.getElementById("js-terms-text-div");
   if (currentPage !== 0) {
     currentPage -= 1;
     updateButtonStyles();
@@ -1494,12 +1447,12 @@ function scrollUp() {
 
 // start page
 function startPage(text) {
-  var $screen = $(".terms_screen_state");
+  const $screen = $(".terms_screen_state");
   $screen.find(".js-terms-text").html(text);
   currentPage = 0;
   totalPages = 0;
   setTimeout(function () {
-    var div = document.getElementById("js-terms-text-div");
+    const div = document.getElementById("js-terms-text-div");
     textHeightQuantity = document.getElementById("js-terms-text").offsetHeight;
     scrollSize = div.offsetHeight - 40;
     updateButtonStyles();
@@ -1515,14 +1468,15 @@ function startPage(text) {
 }
 
 function updatePageCounter() {
-  document.getElementById("terms-page-counter").textContent =
-    currentPage + 1 + "/" + totalPages;
+  document.getElementById("terms-page-counter").textContent = `${
+    currentPage + 1
+  }/${totalPages}`;
 }
 
 // click page up button
 function scrollDown() {
   resetTermsConditionsTimeout();
-  var div = document.getElementById("js-terms-text-div");
+  const div = document.getElementById("js-terms-text-div");
   if (
     !(
       currentPage * scrollSize + scrollSize > textHeightQuantity &&
@@ -1538,8 +1492,8 @@ function scrollDown() {
 
 function updateButtonStyles() {
   textHeightQuantity = document.getElementById("js-terms-text").offsetHeight;
-  var buttonDown = document.getElementById("scroll-down");
-  var buttonUp = document.getElementById("scroll-up");
+  const buttonDown = document.getElementById("scroll-down");
+  const buttonUp = document.getElementById("scroll-up");
   if (currentPage === 0) {
     buttonUp.disabled = true;
   } else {
@@ -1584,14 +1538,12 @@ function setLocaleInfo(data) {
 }
 
 function otherLanguageName() {
-  var lang = lookupLocaleNames(otherLocale());
+  const lang = lookupLocaleNames(otherLocale());
   return lang && lang.nativeName;
 }
 
 function otherLocale() {
-  return _primaryLocales.find(function (c) {
-    return c !== localeCode;
-  });
+  return _primaryLocales.find((c) => c !== localeCode);
 }
 
 function setLocale(data) {
@@ -1642,13 +1594,9 @@ function setLocale(data) {
 
 function setChooseCoinColors() {
   var elem = $("#bg-to-show > img");
-  var img =
-    "images/background/" +
-    (isTwoWay ? "2way" : "1way") +
-    "-" +
-    aspectRatio +
-    (isRTL ? "-rtl" : "") +
-    ".svg";
+  let img = `images/background/${isTwoWay ? "2way" : "1way"}-${aspectRatio}${
+    isRTL ? "-rtl" : ""
+  }.svg`;
   if (img !== elem.attr("src")) {
     elem.attr("src", img);
   }
@@ -1696,18 +1644,13 @@ function setPrimaryLocales(primaryLocales) {
     });
 
   languages.append(
-    '<button class="square-button small-action-button tl2">Languages</button>'
+    `<button class="square-button small-action-button tl2">Languages</button>`
   );
   for (var i = 0; i < sortedPrimaryLocales.length; i++) {
     var l = sortedPrimaryLocales[i];
     var lang = lookupLocaleNames(l);
     var name = lang.nativeName || lang.englishName;
-    var div =
-      '<button class="square-button small-action-button tl2" data-locale="' +
-      l +
-      '">' +
-      name +
-      "</button>";
+    var div = `<button class="square-button small-action-button tl2" data-locale="${l}">${name}</button>`;
     languages.append(div);
   }
 
@@ -1727,9 +1670,9 @@ function setFiatCode(data) {
 }
 
 function setFixedFee(_fee) {
-  var fee = parseFloat(_fee);
+  const fee = parseFloat(_fee);
   if (fee > 0) {
-    var fixedFee = translate("Transaction Fee: %s", [formatFiat(fee, 2)]);
+    const fixedFee = translate("Transaction Fee: %s", [formatFiat(fee, 2)]);
     $(".js-i18n-fixed-fee").html(fixedFee);
   } else {
     $(".js-i18n-fixed-fee").html("");
@@ -1737,10 +1680,7 @@ function setFixedFee(_fee) {
 }
 
 function setCredit(credit, lastBill) {
-  var fiat = credit.fiat,
-    cryptoAtoms = credit.cryptoAtoms,
-    cryptoCode = credit.cryptoCode;
-
+  const { fiat, cryptoAtoms, cryptoCode } = credit;
   var coin = getCryptoCurrency(cryptoCode);
 
   var scale = new BigNumber(10).pow(coin.displayScale);
@@ -1748,7 +1688,7 @@ function setCredit(credit, lastBill) {
   var cryptoDisplayCode = coin.displayCode;
   updateCrypto(".total-crypto-rec", cryptoAmount, cryptoDisplayCode);
   $(".amount-deposited").html(
-    translate("You deposited %s", [fiat + " " + fiatCode])
+    translate("You deposited %s", [`${fiat} ${fiatCode}`])
   );
   $(".fiat .js-amount").html(fiat);
 
@@ -1772,18 +1712,16 @@ function formatDenomination(denom) {
 
 function buildCassetteButtons(_cassettes, numberOfButtons) {
   cassettes = _cassettes;
-  var activeCassettes = _cassettes.filter(function (it) {
-    return it.count === null || it.count > 0;
-  });
-  var inactiveCassettes = _cassettes.filter(function (it) {
-    return it.count === 0;
-  });
+  var activeCassettes = _cassettes.filter(
+    (it) => it.count === null || it.count > 0
+  );
+  var inactiveCassettes = _cassettes.filter((it) => it.count === 0);
 
   var allCassettes = activeCassettes.concat(inactiveCassettes);
   var selectedCassettes = allCassettes.slice(0, numberOfButtons);
-  var sortedCassettes = selectedCassettes.sort(function (a, b) {
-    return a.denomination - b.denomination;
-  });
+  var sortedCassettes = selectedCassettes.sort(
+    (a, b) => a.denomination - b.denomination
+  );
 
   for (var i = 0; i < sortedCassettes.length; i++) {
     var denomination = formatDenomination(sortedCassettes[i].denomination || 0);
@@ -1873,7 +1811,7 @@ function formatCrypto(amount) {
 function formatFiat(amount, fractionDigits) {
   if (!fractionDigits) fractionDigits = 0;
 
-  var localized = amount.toLocaleString(jsLocaleCode, {
+  const localized = amount.toLocaleString(jsLocaleCode, {
     useGrouping: true,
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,
@@ -1893,7 +1831,7 @@ function setExchangeRate(_rates) {
     var cryptoToFiat = new BigNumber(rates.cashIn);
     var rateStr = formatFiat(cryptoToFiat.round(2).toNumber(), 2);
 
-    $(".crypto-rate-cash-in").html("1 " + cryptoCode + " = " + rateStr);
+    $(".crypto-rate-cash-in").html(`1 ${cryptoCode} = ${rateStr}`);
   }
 
   if (rates.cashOut) {
@@ -1901,31 +1839,24 @@ function setExchangeRate(_rates) {
     var cashOutCryptoToFiat =
       cashOut && formatFiat(cashOut.round(2).toNumber(), 2);
 
-    $(".crypto-rate-cash-out").html(
-      "1 " + cryptoCode + " = " + cashOutCryptoToFiat
-    );
+    $(".crypto-rate-cash-out").html(`1 ${cryptoCode} = ${cashOutCryptoToFiat}`);
   }
 
   $(".js-crypto-display-units").text(displayCode);
 }
 
-function qrize(text, target, color, lightning) {
-  var size =
-    arguments.length > 4 && arguments[4] !== undefined
-      ? arguments[4]
-      : "normal";
-
-  var image = document.getElementById("bolt-img");
+function qrize(text, target, color, lightning, size = "normal") {
+  const image = document.getElementById("bolt-img");
   // Hack for surf browser
-  var _size =
+  const _size =
     size === "normal"
       ? document.body.clientHeight * 0.36
       : document.body.clientHeight * 0.25;
 
-  var opts = {
+  const opts = {
     crisp: true,
     fill: color || "black",
-    text: text,
+    text,
     size: _size,
     render: "canvas",
     rounded: 50,
@@ -1933,22 +1864,22 @@ function qrize(text, target, color, lightning) {
     mPosX: 50,
     mPosY: 50,
     mSize: 30,
-    image: image,
+    image,
   };
 
   if (lightning) {
     opts.mode = "image";
   }
 
-  var el = kjua(opts);
+  const el = kjua(opts);
 
   target.empty().append(el);
 }
 
 function setTx(tx) {
-  var txId = tx.id;
-  var isPaperWallet = tx.isPaperWallet;
-  var hasBills = tx.bills && tx.bills.length > 0;
+  const txId = tx.id;
+  const isPaperWallet = tx.isPaperWallet;
+  const hasBills = tx.bills && tx.bills.length > 0;
 
   if (hasBills) {
     $(".js-inserted-notes").show();
@@ -1962,7 +1893,7 @@ function setTx(tx) {
 
   setCurrentDiscount(tx.discount, tx.promoCodeApplied);
 
-  setTimeout(function () {
+  setTimeout(() => {
     qrize(txId, $("#cash-in-qr-code"), CASH_IN_QR_COLOR);
     qrize(txId, $("#cash-in-fail-qr-code"), CASH_IN_QR_COLOR);
     qrize(
@@ -1983,7 +1914,7 @@ function formatAddressNoBreakLines(address) {
 }
 
 function formatAddress(address) {
-  var toBr = formatAddressNoBreakLines(address);
+  let toBr = formatAddressNoBreakLines(address);
   if (!toBr) return;
 
   return toBr.replace(/((.{4} ){5})/g, "$1<br/> ");
@@ -2041,15 +1972,15 @@ function sendOnly(reason) {
   // TODO: sendOnly should be made into its own state on brain.js
   if (currentState === "send_only") return;
 
-  var errorMessages = {
+  const errorMessages = {
     transactionLimit: translate("Transaction limit reached"),
     validatorError: translate("Error in validation"),
     lowBalance: translate("We're out of coins!"),
     blockedCustomer: translate("Transaction limit reached"),
-
-    // If no reason provided defaults to lowBalance
   };
-  var reasonText = errorMessages[reason] || errorMessages.lowBalance;
+
+  // If no reason provided defaults to lowBalance
+  const reasonText = errorMessages[reason] || errorMessages.lowBalance;
   $("#send-only-title").text(reasonText);
 
   if (reason === "blockedCustomer") {
@@ -2125,7 +2056,7 @@ function loadI18n(localeCode) {
   var messages = locales[localeCode] || locales["en-US"];
 
   return new Jed({
-    missing_key_callback: function missing_key_callback() {},
+    missing_key_callback: function () {},
     locale_data: {
       messages: messages,
     },
@@ -2134,7 +2065,7 @@ function loadI18n(localeCode) {
 
 function reachFiatLimit(rec) {
   var msg = null;
-  if (rec.isEmpty) msg = translate("We're a little low, please cash out");
+  if (rec.isEmpty) msg = translate(`We're a little low, please cash out`);
   else if (rec.txLimitReached)
     msg = translate("Transaction limit reached, please cash out");
 
@@ -2171,7 +2102,7 @@ function fiatCredit(data) {
   var cryptoCode = tx.cryptoCode;
   var activeDenominations = data.activeDenominations;
   var coin = getCryptoCurrency(cryptoCode);
-  var fiat = BN(tx.fiat);
+  const fiat = BN(tx.fiat);
 
   var fiatDisplay = BN(tx.fiat).toNumber().toLocaleString(jsLocaleCode, {
     useGrouping: true,
@@ -2214,7 +2145,7 @@ function setDepositAddress(depositInfo) {
 }
 
 function setVersion(version) {
-  $(".version-number").html("Version: " + version);
+  $(".version-number").html(`Version: ${version}`);
 }
 
 function deposit(tx) {
@@ -2261,7 +2192,7 @@ function fiatComplete(tx) {
 
 function dispenseBatch(data) {
   $(".batch").css("visibility", data.of === 1 ? "hidden" : "visible");
-  $(".batch").text(data.current + "/" + data.of);
+  $(".batch").text(`${data.current}/${data.of}`);
 }
 
 function initDebug() {
@@ -2300,18 +2231,18 @@ function initDebug() {
 }
 
 function calculateAspectRatio() {
-  var width = $("body").width();
-  var height = $("body").height();
+  const width = $("body").width();
+  const height = $("body").height();
 
   function gcd(a, b) {
     return b === 0 ? a : gcd(b, a % b);
   }
 
-  var w = width;
-  var h = height;
-  var r = gcd(w, h);
-  var aspectRatioPt1 = w / r;
-  var aspectRatioPt2 = h / r;
+  const w = width;
+  const h = height;
+  const r = gcd(w, h);
+  const aspectRatioPt1 = w / r;
+  const aspectRatioPt2 = h / r;
 
   if (aspectRatioPt1 === 8 && aspectRatioPt2 === 5) {
     aspectRatio = "16:10";
@@ -2322,12 +2253,12 @@ function calculateAspectRatio() {
   }
 }
 
-var background = null;
+let background = null;
 
 function doTransition(cb) {
   // TODO Disable animations for V1
-  var toShow = null;
-  var toShowOver = null;
+  let toShow = null;
+  let toShowOver = null;
 
   if (isTwoWay) {
     toShow = ["#bg-to-show"];
@@ -2372,24 +2303,22 @@ function setupAnimation(isTwoWay, isAr800) {
     autostart: true,
   }).appendTo(elem);
 
-  var elementId =
-    (isTwoWay ? "two-way" : "one-way") +
-    "-" +
-    (isAr800 ? "800" : "1080") +
-    (isRTL ? "-rtl" : "");
+  let elementId = `${isTwoWay ? "two-way" : "one-way"}-${
+    isAr800 ? "800" : "1080"
+  }${isRTL ? "-rtl" : ""}`;
   background = two.interpret(document.getElementById(elementId));
   background.scale = 1;
 }
 
 function shouldEnableTouch() {
-  var ua = navigator.userAgent;
+  const ua = navigator.userAgent;
   if (ua.match(/surf/gi)) return false;
 
   // ACP has chromium 34 and upboard 73
-  var chromiumVersion = ua.match(/chromium\/(\d+)/i);
-  var chromeVersion = ua.match(/chrome\/(\d+)/i);
-  var chromiumPlus73 = chromiumVersion && chromiumVersion[1] >= 73;
-  var chromePlus73 = chromeVersion && chromeVersion[1] >= 73;
+  const chromiumVersion = ua.match(/chromium\/(\d+)/i);
+  const chromeVersion = ua.match(/chrome\/(\d+)/i);
+  const chromiumPlus73 = chromiumVersion && chromiumVersion[1] >= 73;
+  const chromePlus73 = chromeVersion && chromeVersion[1] >= 73;
 
   return chromiumPlus73 || chromePlus73;
 }
@@ -2414,9 +2343,9 @@ function setCurrentDiscount(currentDiscount, promoCodeApplied) {
     $("#insert-first-bill-code-added").hide();
     $("#choose-fiat-code-added").hide();
   } else if (currentDiscount > 0) {
-    var successMessage =
+    const successMessage =
       "✔ " +
-      translate("Discount added (%s off commissions)", [currentDiscount + "%"]);
+      translate("Discount added (%s off commissions)", [`${currentDiscount}%`]);
     $("#insert-first-bill-code-added").html(successMessage);
     $("#choose-fiat-code-added").html(successMessage);
     $("#insert-first-bill-code-added").show();
@@ -2430,70 +2359,69 @@ function setCurrentDiscount(currentDiscount, promoCodeApplied) {
 }
 
 function setReceiptPrint(receiptStatus, smsReceiptStatus) {
-  var status = null;
+  let status = null;
   if (receiptStatus) status = receiptStatus;
   else status = smsReceiptStatus;
 
-  var className = receiptStatus ? "print-receipt" : "send-sms-receipt";
-  var printing = receiptStatus ? "Printing receipt..." : "收據簡訊發送中...";
-  var success = receiptStatus
+  const className = receiptStatus ? "print-receipt" : "send-sms-receipt";
+  const printing = receiptStatus ? "Printing receipt..." : "收據簡訊發送中...";
+  const success = receiptStatus
     ? "Receipt printed successfully!"
     : "收據簡訊成功發送!";
 
   switch (status) {
     case "disabled":
-      $("#" + className + "-cash-in-message").addClass("hide");
-      $("#" + className + "-cash-in-button").addClass("hide");
-      $("#" + className + "-cash-out-message").addClass("hide");
-      $("#" + className + "-cash-out-button").addClass("hide");
-      $("#" + className + "-cash-in-fail-message").addClass("hide");
-      $("#" + className + "-cash-in-fail-button").addClass("hide");
+      $(`#${className}-cash-in-message`).addClass("hide");
+      $(`#${className}-cash-in-button`).addClass("hide");
+      $(`#${className}-cash-out-message`).addClass("hide");
+      $(`#${className}-cash-out-button`).addClass("hide");
+      $(`#${className}-cash-in-fail-message`).addClass("hide");
+      $(`#${className}-cash-in-fail-button`).addClass("hide");
       break;
     case "available":
-      $("#" + className + "-cash-in-message").addClass("hide");
-      $("#" + className + "-cash-in-button").removeClass("hide");
-      $("#" + className + "-cash-out-message").addClass("hide");
-      $("#" + className + "-cash-out-button").removeClass("hide");
-      $("#" + className + "-cash-in-fail-message").addClass("hide");
-      $("#" + className + "-cash-in-fail-button").removeClass("hide");
+      $(`#${className}-cash-in-message`).addClass("hide");
+      $(`#${className}-cash-in-button`).removeClass("hide");
+      $(`#${className}-cash-out-message`).addClass("hide");
+      $(`#${className}-cash-out-button`).removeClass("hide");
+      $(`#${className}-cash-in-fail-message`).addClass("hide");
+      $(`#${className}-cash-in-fail-button`).removeClass("hide");
       break;
     case "printing":
-      var message = locale.translate(printing).fetch();
-      $("#" + className + "-cash-in-button").addClass("hide");
-      $("#" + className + "-cash-in-message").html(message);
-      $("#" + className + "-cash-in-message").removeClass("hide");
-      $("#" + className + "-cash-out-button").addClass("hide");
-      $("#" + className + "-cash-out-message").html(message);
-      $("#" + className + "-cash-out-message").removeClass("hide");
-      $("#" + className + "-cash-in-fail-button").addClass("hide");
-      $("#" + className + "-cash-in-fail-message").html(message);
-      $("#" + className + "-cash-in-fail-message").removeClass("hide");
+      const message = locale.translate(printing).fetch();
+      $(`#${className}-cash-in-button`).addClass("hide");
+      $(`#${className}-cash-in-message`).html(message);
+      $(`#${className}-cash-in-message`).removeClass("hide");
+      $(`#${className}-cash-out-button`).addClass("hide");
+      $(`#${className}-cash-out-message`).html(message);
+      $(`#${className}-cash-out-message`).removeClass("hide");
+      $(`#${className}-cash-in-fail-button`).addClass("hide");
+      $(`#${className}-cash-in-fail-message`).html(message);
+      $(`#${className}-cash-in-fail-message`).removeClass("hide");
       break;
     case "success":
-      var successMessage = "✔ " + locale.translate(success).fetch();
-      $("#" + className + "-cash-in-button").addClass("hide");
-      $("#" + className + "-cash-in-message").html(successMessage);
-      $("#" + className + "-cash-in-message").removeClass("hide");
-      $("#" + className + "-cash-out-button").addClass("hide");
-      $("#" + className + "-cash-out-message").html(successMessage);
-      $("#" + className + "-cash-out-message").removeClass("hide");
-      $("#" + className + "-cash-in-fail-button").addClass("hide");
-      $("#" + className + "-cash-in-fail-message").html(successMessage);
-      $("#" + className + "-cash-in-fail-message").removeClass("hide");
+      const successMessage = "✔ " + locale.translate(success).fetch();
+      $(`#${className}-cash-in-button`).addClass("hide");
+      $(`#${className}-cash-in-message`).html(successMessage);
+      $(`#${className}-cash-in-message`).removeClass("hide");
+      $(`#${className}-cash-out-button`).addClass("hide");
+      $(`#${className}-cash-out-message`).html(successMessage);
+      $(`#${className}-cash-out-message`).removeClass("hide");
+      $(`#${className}-cash-in-fail-button`).addClass("hide");
+      $(`#${className}-cash-in-fail-message`).html(successMessage);
+      $(`#${className}-cash-in-fail-message`).removeClass("hide");
       break;
     case "failed":
-      var failMessage =
+      const failMessage =
         "✖ " + locale.translate("An error occurred, try again.").fetch();
-      $("#" + className + "-cash-in-button").addClass("hide");
-      $("#" + className + "-cash-in-message").html(failMessage);
-      $("#" + className + "-cash-in-message").removeClass("hide");
-      $("#" + className + "-cash-out-button").addClass("hide");
-      $("#" + className + "-cash-out-message").html(failMessage);
-      $("#" + className + "-cash-out-message").removeClass("hide");
-      $("#" + className + "-cash-in-fail-button").addClass("hide");
-      $("#" + className + "-cash-in-fail-message").html(failMessage);
-      $("#" + className + "-cash-in-fail-message").removeClass("hide");
+      $(`#${className}-cash-in-button`).addClass("hide");
+      $(`#${className}-cash-in-message`).html(failMessage);
+      $(`#${className}-cash-in-message`).removeClass("hide");
+      $(`#${className}-cash-out-button`).addClass("hide");
+      $(`#${className}-cash-out-message`).html(failMessage);
+      $(`#${className}-cash-out-message`).removeClass("hide");
+      $(`#${className}-cash-in-fail-button`).addClass("hide");
+      $(`#${className}-cash-in-fail-message`).html(failMessage);
+      $(`#${className}-cash-in-fail-message`).removeClass("hide");
       break;
   }
 }
-//# sourceMappingURL=app.js.map
