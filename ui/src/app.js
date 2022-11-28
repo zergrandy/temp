@@ -2364,10 +2364,8 @@ function setReceiptPrint(receiptStatus, smsReceiptStatus) {
   else status = smsReceiptStatus;
 
   const className = receiptStatus ? "print-receipt" : "send-sms-receipt";
-  const printing = receiptStatus ? "Printing receipt..." : "收據簡訊發送中...";
-  const success = receiptStatus
-    ? "Receipt printed successfully!"
-    : "收據簡訊成功發送!";
+  const printing = receiptStatus ? "列印收據中..." : "收據簡訊發送中...";
+  const success = receiptStatus ? "收據列印成功!" : "收據簡訊成功發送!";
 
   switch (status) {
     case "disabled":
